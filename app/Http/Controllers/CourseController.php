@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Course;
 use App\Repositories\CourseRepository;
 use App\Utils\HttpUtils;
 use Illuminate\Http\JsonResponse;
@@ -85,5 +86,13 @@ class CourseController extends Controller
     public function destroy($id)
     {
         return HttpUtils::sendSuccessResponse('',$this->repository->delete($id));
+    }
+
+    public function accept($id)
+    {
+        $course = Course::findOrFail($id);
+        $course->waiting_for_approval = 0;
+        $course->save();
+        return HttpUtils::sendSuccessResponse('true');
     }
 }

@@ -17,7 +17,8 @@ class AbstractRepository
     {
         $edit = $this->find($id);
         $edit->fill($data);
-        return $edit->save();
+        $edit->save();
+        return $edit;
     }
 
     public function delete($id)
@@ -26,9 +27,12 @@ class AbstractRepository
         return $edit->delete();
     }
 
-    public function findAll($limit = null, array $relations = [])
+    public function findAll($limit = null, array $relations = [], $conditions = [])
     {
         $query = $this->model->newQuery();
+        foreach ($conditions as $key => $value){
+            $query->where($key,'=',$value);
+        }
         if ($limit) {
             $query->limit($limit);
         }

@@ -20,11 +20,16 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param Request $request
      * @return JsonResponse
      */
-    public function index()
+    public function index(Request $request)
     {
-        return HttpUtils::sendSuccessResponse('',$this->repository->findAll());
+        $where = [];
+        if (!is_null($request->input('is_student'))){
+            $where['is_student'] = $request->input('is_student') == 1;
+        }
+        return HttpUtils::sendSuccessResponse('',$this->repository->findAll($where));
     }
 
 

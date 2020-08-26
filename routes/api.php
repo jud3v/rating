@@ -24,10 +24,10 @@ Route::group([
     'middleware' => 'api',
 
 ], function ($router) {
-
     Route::resource('/languages', 'LanguageController');
     Route::resource('/users', 'UserController');
     Route::resource('/courses', 'CourseController');
+    Route::post('/courses/accept/{id}','CourseController@accept');
     Route::resource('/exercises', 'ExerciceController');
     Route::resource('/comment', 'CommentController');
     Route::resource('/ratings', 'RatingController');

@@ -23,7 +23,11 @@ if (localStorage.getItem('token')) {
 axios.defaults.baseURL = 'http://127.0.0.1:8000/api/'
 
 axios.interceptors.request.use(config => {
-    config.url += '?token='+localStorage.getItem('token')
+    let prefix = '?'
+    if (config.url.includes(prefix)) {
+        prefix = '&'
+    }
+    config.url += prefix+'token='+localStorage.getItem('token')
     return config
 })
 

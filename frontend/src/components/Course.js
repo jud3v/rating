@@ -12,12 +12,15 @@ import '@fullcalendar/core/main.css';
 import '@fullcalendar/daygrid/main.css';
 import '@fullcalendar/timegrid/main.css';
 import frLocale from '@fullcalendar/core/locales/fr';
+import {Button} from "primereact/button";
+import { Calendar } from 'primereact/calendar';
 
 export default class Course extends React.Component {
 
     state = {
         courses: [],
         events: [],
+        meeting: '',
         options: {
             plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
             defaultView: 'timeGridWeek',
@@ -29,8 +32,9 @@ export default class Course extends React.Component {
             },
             editable: true,
             locale: frLocale,
-        }
-
+        },
+        is_creating: false,
+        students: null,
     }
 
     componentDidMount() {
@@ -52,7 +56,61 @@ export default class Course extends React.Component {
             })
     }
 
+    actionTemplate = (rowData, column) => {
+        return (
+            <div className="d-flex justify-content-center">
+                <Button className="btn btn-success btn-xs" icon="pi pi-pencil" label="accept" onClick={() => {
+                    loadProgressBar()
+                    console.log(rowData)
+                    axios.post('courses/accept/'+rowData.id)
+                        .then(() => {
+                            const copy = [...this.state.courses]
+                            const index = copy.findIndex(item => rowData.id === item.id)
+                            const event_copy = [...this.state.events]
+                            if (index >= 0){
+                                copy.splice(index,1)
+                                this.setState({courses:copy})
+
+                                const events = {
+                                    id: rowData.id,
+                                    start: rowData.meeting_date,
+                                    title: `courses_${rowData.id}`,
+                                    end: rowData.end,
+                                }
+                                event_copy.push(events)
+                                this.setState({events:event_copy})
+                            }
+                        })
+                        . catch(() => {
+                            alert('not ok')
+                        })
+                }}/>
+            </div>
+        )
+    }
+
+    handleCreateEvent = () => {
+        this.setState({is_creating:!this.state.is_creating})
+        if (!this.state.students){
+            axios.get('users?is_student=1')
+                .then((data) => {
+                    this.setState({students:data})
+                })
+                .catch(() => {
+                    alert('not ok')
+                })
+        }
+    }
+
     render() {
+        const footer = <Button label="create" onClick={this.handleCreateEvent} icon="pi pi-plus"/>
+        const formulaire = (
+            <React.Fragment>
+                <label htmlFor="language" className="text-secondary">Create Language :</label>
+                <Calendar showTime hourFormat="24" className="w-25" name="meeting_date" value={this.state.meeting} onChange={(e) => this.setState({meeting: e.value})}/>
+                <button className="btn btn-success btn-xs mt-1" type="button" onClick={this.onClickHandler}>Submit The Language</button>
+            </React.Fragment>
+        )
         const token = localStorage.getItem('token')
         const {is_student} = jwtDecode(token)
         let content = null
@@ -60,17 +118,21 @@ export default class Course extends React.Component {
             content = (
             <React.Fragment>
                 <DataTable value={this.state.courses}
+                           footer={footer}
                            header="Courses"
                            paginatorPosition="both"
                            selectionMode="single"
                            paginator={true}
-                            className="mb-5">
+                            className="mb-5 text-center">
                     <Column field="id" header="ID" sortable={true} />
                     <Column field="meeting_date" header="Date" sortable={true} />
                     <Column field="is_done" header="Done" sortable={true} />
-                    <Column field="teacher_id" header="teacher" sortable={true} />
-                    <Column field="student_id" header="student" sortable={true} />
+                    <Column field="name" header="student name" sortable={true} />
+                    <Column body={this.actionTemplate} header="Action" />
                 </DataTable>
+                {
+                    this.state.is_creating ? formulaire : null
+                }
                 <hr/>
                <div className="container mt-5">
                    <FullCalendar events={this.state.events} options={this.state.options} />

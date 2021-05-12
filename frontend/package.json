@@ -15,7 +15,7 @@
         "@fullcalendar/timegrid": "4.0.1",
         "axios": "^0.19.2",
         "axios-progress-bar": "^1.2.0",
-        "chart.js": "2.7.3",
+        "chart.js": "2.9.4",
         "classnames": "^2.2.6",
         "jwt-decode": "^2.2.0",
         "node-sass": "^4.12.0",
